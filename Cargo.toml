@@ -11,3 +11,6 @@ wgpu = "0.13"
 pollster = "0.2.5"
 tokio = { version = "1", features = ["full"] }
 bytemuck = { version = "1.4", features = [ "derive" ] }
+renderdoc = "0.10.1"
+image = "0.23"
+anyhow = "1.0"

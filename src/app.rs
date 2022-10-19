@@ -4,7 +4,7 @@ use winit::{
     window::Window,
 };
 
-use crate::renderer::Renderer;
+use crate::rendering::renderer::Renderer;
 
 pub struct Application {
     pub name: &'static str,
