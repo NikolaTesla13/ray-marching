@@ -10,7 +10,6 @@ struct VertexOutput {
     @location(1) tex_coords: vec2<f32>,
 };
 
-@group(0) @binding(0) var output_texture: texture_storage_2d<rgba8unorm, write>;
 @group(0) @binding(1) var display_texture: texture_2d<f32>;
 @group(0) @binding(2) var _sampler: sampler;
 
@@ -31,20 +30,4 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let gamma_corrected = pow(color.xyz, vec3<f32>(2.2));
 
     return vec4<f32>(gamma_corrected, 1.0);
-}
-
-@compute @workgroup_size(16, 16)
-fn compute_main(
-        @builtin(global_invocation_id) global_id: vec3<u32>
-) {
-    let dimensions = textureDimensions(output_texture);
-    let coords = vec2<i32>(global_id.xy);
-
-    if coords.x >= dimensions.x || coords.y >= dimensions.y {
-        return;
-    }
-
-    let color = vec4<f32>(1.0 - vec2<f32>(coords) / vec2<f32>(dimensions.xy), 0.0, 1.0);
-
-    textureStore(output_texture, coords.xy, color);
 }

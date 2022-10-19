@@ -3,10 +3,7 @@ use std::borrow::Cow;
 use wgpu::util::DeviceExt;
 use winit::{dpi::PhysicalSize, window::Window};
 
-use super::{
-    geometry::{Vertex, INDICES, VERTICES},
-    texture,
-};
+use super::geometry::{Vertex, INDICES, VERTICES};
 
 pub struct Renderer {
     surface: wgpu::Surface,
@@ -52,10 +49,17 @@ impl Renderer {
             .await
             .expect("Failed to create device");
 
-        let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
+        let postprocess_shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: None,
             source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!(
-                "../../shaders/simple.wgsl"
+                "../../shaders/postprocess.wgsl"
+            ))),
+        });
+
+        let compute_shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
+            label: None,
+            source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!(
+                "../../shaders/compute.wgsl"
             ))),
         });
 
@@ -72,8 +76,8 @@ impl Renderer {
         surface.configure(&device, &config);
 
         let texture_size = wgpu::Extent3d {
-            width: 1280,
-            height: 720,
+            width: 1920,
+            height: 1080,
             depth_or_array_layers: 1,
         };
 
@@ -171,7 +175,7 @@ impl Renderer {
 
         let compute_pipeline = device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
             label: None,
-            module: &shader,
+            module: &compute_shader,
             entry_point: "compute_main",
             layout: Some(&pipeline_layout),
         });
@@ -180,12 +184,12 @@ impl Renderer {
             label: None,
             layout: Some(&pipeline_layout),
             vertex: wgpu::VertexState {
-                module: &shader,
+                module: &postprocess_shader,
                 entry_point: "vs_main",
                 buffers: &[Vertex::desc()],
             },
             fragment: Some(wgpu::FragmentState {
-                module: &shader,
+                module: &postprocess_shader,
                 entry_point: "fs_main",
                 targets: &[Some(swapchain_format.into())],
             }),
@@ -247,7 +251,7 @@ impl Renderer {
                 encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: None });
             compute_pass.set_pipeline(&self.compute_pipeline);
             compute_pass.set_bind_group(0, &self.texture_bind_group, &[]);
-            compute_pass.dispatch_workgroups(1280, 720, 1);
+            compute_pass.dispatch_workgroups(self.texture_size.width, self.texture_size.height, 1);
         }
 
         encoder.copy_texture_to_texture(
@@ -308,10 +312,9 @@ impl Renderer {
 }
 
 /*
-    TODO - take the image rendered in the compute shader and display it in the fragment shader
-
-    https://blog.redwarp.app/image-filters/
-    https://github.com/redwarp/blog/blob/main/code-sample/image-filters/src/main.rs
-    https://web.dev/gpu-compute/#compute-shader-code
-    https://learnopengl.com/Guest-Articles/2022/Compute-Shaders/Introduction
+    Ray Marching:
+     - https://michaelwalczyk.com/blog-ray-marching.html
+     - https://jamie-wong.com/2016/07/15/ray-marching-signed-distance-functions/
+     - https://www.shadertoy.com/view/llt3R4
+     - https://www.shadertoy.com/view/flSBDz
 */
