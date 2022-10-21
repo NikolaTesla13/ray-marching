@@ -24,8 +24,6 @@ pub struct Renderer {
 
 impl Renderer {
     pub async fn new(window: &Window) -> Self {
-        let size = window.inner_size();
-
         let instance = wgpu::Instance::new(wgpu::Backends::DX12);
         let surface = unsafe { instance.create_surface(&window) };
         let adapter = instance
@@ -64,16 +62,6 @@ impl Renderer {
         });
 
         let swapchain_format = surface.get_supported_formats(&adapter)[0];
-
-        let config = wgpu::SurfaceConfiguration {
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-            format: swapchain_format,
-            width: size.width,
-            height: size.height,
-            present_mode: wgpu::PresentMode::Fifo,
-        };
-
-        surface.configure(&device, &config);
 
         let texture_size = wgpu::Extent3d {
             width: 1920,
