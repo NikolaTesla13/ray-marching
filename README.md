@@ -8,6 +8,8 @@ Ray marching is like a simplified version of ray tracing. Instead of sending ray
 
 Some uses of it include 3D fractals and creating infinite scenes, not necessarily made out of triangles. Very few games use it.
 
+![example](https://media.discordapp.net/attachments/833285965019217980/1033080399036952606/unknown.png)
+
 ## Resources
 
 Here are some of the sources I used to learn this algorithm:
